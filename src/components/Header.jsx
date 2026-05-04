@@ -1,14 +1,9 @@
-import PaginaAtualContext from "@/contexts/PaginaAtualContext";
+import { PaginaAtualContext } from "@/contexts/PaginaAtualContext";
 import { Box, List, Link } from "@chakra-ui/react";
 import { useContext } from "react";
 
 const Header = () => {
-  const {setPaginaAtual} = useContext(PaginaAtualContext);
-
-  const paginaHandler = (e, target) => {
-    e.preventDefault();
-    setPaginaAtual(target);
-  }
+  const { paginaHandler } = useContext(PaginaAtualContext);
 
   return (
     <Box as='header' padding='15px' bg='teal.900'>

@@ -1,4 +1,4 @@
-import PaginaAtualContext from "@/contexts/PaginaAtualContext";
+import { PaginaAtualContext } from "@/contexts/PaginaAtualContext";
 import { useContext, useState } from "react";
 
 const Main = () => {
