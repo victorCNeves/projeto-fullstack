@@ -1,17 +1,15 @@
-import { PaginaAtualProvider } from "@/contexts/PaginaAtualContext";
-import Header from "./Header";
-import Main from './Main'
-import { useState } from "react";
+import Header from './Header';
+import { Outlet } from 'react-router';
 
 function App() {
-  const [paginaAtual, setPaginaAtual] = useState('home')
-
   return (
-    <PaginaAtualProvider value={{paginaAtual, setPaginaAtual}}>
+    <>
       <Header />
-      <Main />
-    </PaginaAtualProvider>
-  )
+      <main>
+        <Outlet />
+      </main>
+    </>
+  );
 }
 
-export default App
+export default App;
