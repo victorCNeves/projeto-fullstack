@@ -4,7 +4,6 @@ import Carrosel from '@/components/Carrossel';
 
 const Home = () => {
   const { generos } = useLoaderData();
-  console.log(generos);
   return (
     <Box minH="100vh" w="full">
       <VStack align="stretch">
