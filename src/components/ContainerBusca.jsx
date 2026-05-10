@@ -12,9 +12,16 @@ import {
 import { FaSearch } from 'react-icons/fa';
 
 const ContainerBusca = ({ generos }) => {
-  generos = createListCollection({
-    items: generos.map((genero) => ({ value: genero.name, name: genero.name })),
-  });
+  const collection = useMemo(
+    () =>
+      createListCollection({
+        items: generos.map((genero) => ({
+          value: genero.name,
+          name: genero.name,
+        })),
+      }),
+    [generos]
+  );
 
   return (
     <Stack gap={8} mb={10}>
