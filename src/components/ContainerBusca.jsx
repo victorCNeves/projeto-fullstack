@@ -50,7 +50,7 @@ const ContainerBusca = ({ generos }) => {
         bg="gray.900"
         p={6}
         borderRadius="xl"
-        align="flex-end"
+        align="flex-start"
       >
         <Box flex="2">
           <Text color="gray.300" mb={2} fontSize="sm" fontWeight="bold">
@@ -75,7 +75,7 @@ const ContainerBusca = ({ generos }) => {
 
         <Box flex="1">
           <Flex justify="space-between" align="center" mb={2}>
-            <Text color="gray.300" mb={2} fontSize="sm" fontWeight="bold">
+            <Text color="gray.300" fontSize="sm" fontWeight="bold">
               Gênero
             </Text>
             {genero.length > 0 && (
@@ -98,9 +98,17 @@ const ContainerBusca = ({ generos }) => {
             onValueChange={(details) => setGenero(details.value)}
           >
             <Select.HiddenSelect />
-            <Select.Label>Selecione um gênero</Select.Label>
             <Select.Control>
-              <Select.Trigger>
+              <Select.Trigger
+                bg="gray.800"
+                border="none"
+                color="white"
+                height="40px"
+                cursor="pointer"
+                _hover={{ bg: 'gray.700' }}
+                _focus={{ ring: 2, ringColor: 'teal.500' }}
+                transition="background 0.2s"
+              >
                 <Select.ValueText placeholder="Selecione um gênero" />
               </Select.Trigger>
               <Select.IndicatorGroup>
@@ -109,9 +117,21 @@ const ContainerBusca = ({ generos }) => {
             </Select.Control>
             <Portal>
               <Select.Positioner>
-                <Select.Content>
+                <Select.Content
+                  bg="gray.800"
+                  color="white"
+                  border="1px solid"
+                  borderColor="gray.700"
+                >
                   {collection.items.map((c) => (
-                    <Select.Item item={c} key={c.value}>
+                    <Select.Item
+                      item={c}
+                      key={c.value}
+                      cursor="pointer"
+                      _hover={{ bg: 'gray.700' }}
+                      _selected={{ bg: 'gray.900' }}
+                      transition="all 0.1s"
+                    >
                       {c.name}
                       <Select.ItemIndicator />
                     </Select.Item>
