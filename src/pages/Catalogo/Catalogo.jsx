@@ -11,7 +11,7 @@ const Catalogo = () => {
       <Container maxW="container.xl">
         <ContainerBusca generos={generos} />
         <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }} gap={6}>
-          {filmes.map((filme) => (
+          {filmes.results.map((filme) => (
             <CardFilme key={filme.id} filme={filme} />
           ))}
         </SimpleGrid>
