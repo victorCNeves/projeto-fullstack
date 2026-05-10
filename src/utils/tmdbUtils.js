@@ -108,18 +108,18 @@ export const obterGenerosComCache = processarCache(
   buscarESalvarGeneros
 );
 
-export const buscarFilmes = async (
+export const buscarFilmes = async ({
   pagina = 1,
   busca = '',
   generoId = '',
   dataInicio = '',
-  dataFim = ''
-) => {
+  dataFim = '',
+} = {}) => {
   const semFiltros =
     !busca && !generoId && !dataInicio && !dataFim && pagina === 1;
 
   if (semFiltros) {
-    return obterFilmesCatalogoComCache;
+    return await obterFilmesCatalogoComCache;
   }
 
   const parametros = {
@@ -137,6 +137,8 @@ export const buscarFilmes = async (
     if (dataInicio) parametros['primary_release_date.gte'] = dataInicio;
     if (dataFim) parametros['primary_release_date.lte'] = dataFim;
   }
-
-  return await requisicaoTMDB(endpoint, parametros);
+  const filmes = await requisicaoTMDB(endpoint, parametros);
+  popularFavoritosNosFilmes(filmes.results);
+  popularGenerosNosFilmes(filmes.results, (await obterGenerosComCache).genres);
+  return filmes;
 };
