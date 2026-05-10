@@ -9,8 +9,9 @@ const Home = () => {
       <VStack align="stretch">
         {generos.map((genero, key) => (
           <Carrosel
+            generoId={genero.id}
             titulo={genero.name}
-            filmes={genero.movies.results}
+            filmes={genero.movies}
             key={key}
           />
         ))}
