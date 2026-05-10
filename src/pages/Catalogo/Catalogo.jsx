@@ -11,6 +11,7 @@ const Catalogo = () => {
   const [filmes, setFilmes] = useState(useLoaderData().filmes);
   const { params, setParams } = useContext(BuscaContext);
   const update = useRef(false);
+  const sentinelRef = useRef(null);
 
   useEffect(() => {
     if (update.current) {
@@ -35,6 +36,26 @@ const Catalogo = () => {
       update.current = true;
     }
   }, [params]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setParams((param) => {
+            return { ...param, pagina: param.pagina + 1 };
+          });
+        }
+      },
+      { rootMargin: '100px' }
+    );
+
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <Box bg="black" minH="100vh" py={10}>
       <Container maxW="container.xl">
@@ -45,6 +66,7 @@ const Catalogo = () => {
           ))}
         </SimpleGrid>
       </Container>
+      <div ref={sentinelRef} />
     </Box>
   );
 };
