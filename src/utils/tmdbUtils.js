@@ -25,8 +25,7 @@ const requisicaoTMDB = async (caminho, parametros = {}) => {
 };
 
 const buscarESalvarGeneros = async () => {
-  const response = await requisicaoTMDB('genre/movie/list');
-  const data = await response.json();
+  const data = await requisicaoTMDB('genre/movie/list');
 
   data.genres = await popularFilmesNosGeneros(data.genres);
   data.timestamp = Date.now();
@@ -36,12 +35,11 @@ const buscarESalvarGeneros = async () => {
 };
 
 const buscarESalvarFilmes = async () => {
-  const response = await requisicaoTMDB('discover/movie', {
+  const data = await requisicaoTMDB('discover/movie', {
     sort_by: 'popularity.desc',
     page: '1',
   });
-  const data = await response.json();
-  const generos = await obterGenerosComCache();
+  const generos = await obterGenerosComCache;
   popularGenerosNosFilmes(data.results, generos.genres);
   popularFavoritosNosFilmes(data.results);
 
@@ -50,7 +48,7 @@ const buscarESalvarFilmes = async () => {
   return data;
 };
 
-const processarCache = async (cache, tempoExpiracao, buscaAssincrona) => {
+const processarCache = async (chave, tempoExpiracao, buscaAssincrona) => {
   const cache = JSON.parse(localStorage.getItem(chave));
   const agora = Date.now();
   const tempoPassado = cache ? agora - cache.timestamp : Infinity;
@@ -121,7 +119,7 @@ export const buscarFilmes = async (
     !busca && !generoId && !dataInicio && !dataFim && pagina === 1;
 
   if (semFiltros) {
-    return obterFilmesCatalogoComCache();
+    return obterFilmesCatalogoComCache;
   }
 
   const parametros = {
