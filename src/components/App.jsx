@@ -1,3 +1,4 @@
+import { BuscaProvider } from '@/contexts/BuscaContext';
 import Header from './Header';
 import { Outlet } from 'react-router';
 
@@ -6,7 +7,9 @@ function App() {
     <>
       <Header />
       <main>
-        <Outlet />
+        <BuscaProvider>
+          <Outlet />
+        </BuscaProvider>
       </main>
     </>
   );

@@ -1,3 +1,4 @@
+import { BuscaContext } from '@/contexts/BuscaContext';
 import {
   Box,
   Input,
@@ -10,8 +11,8 @@ import {
   Link,
   createListCollection,
 } from '@chakra-ui/react';
-import { useMemo, useState } from 'react';
-import { FaSearch } from 'react-icons/fa';
+import { useContext, useMemo, useState } from 'react';
+import { FaSearch, FaExclamationTriangle } from 'react-icons/fa';
 
 const ContainerBusca = ({ generos }) => {
   const collection = useMemo(
@@ -28,8 +29,18 @@ const ContainerBusca = ({ generos }) => {
   const [genero, setGenero] = useState([]);
   const [dataInicial, setDataInicial] = useState('');
   const [dataFinal, setDataFinal] = useState('');
+  const { params, setParams } = useContext(BuscaContext);
 
-  const handleFiltrar = () => {};
+  const handleFiltrar = () => {
+    const generoId = generos?.find((g) => g.name === genero[0])?.id;
+    setParams({
+      pagina: 1,
+      busca: busca,
+      generoId: generoId,
+      dataInicio: dataInicial,
+      dataFim: dataFinal,
+    });
+  };
 
   return (
     <Stack gap={8} mb={10}>
@@ -54,6 +65,12 @@ const ContainerBusca = ({ generos }) => {
             onChange={(e) => setBusca(e.target.value)}
             _focus={{ ring: 2, ringColor: 'teal.500' }}
           />
+          <Flex align="center" gap={1} mt={2} color="orange.400">
+            <FaExclamationTriangle size="10px" />
+            <Text fontSize="xs" fontWeight="medium">
+              A busca por nome ignora os outros filtros.
+            </Text>
+          </Flex>
         </Box>
 
         <Box flex="1">
