@@ -39,7 +39,7 @@ const buscarESalvarFilmes = async () => {
     sort_by: 'popularity.desc',
     page: '1',
   });
-  const generos = await obterGenerosComCache;
+  const generos = await obterGenerosComCache();
   popularGenerosNosFilmes(data.results, generos.genres);
   popularFavoritosNosFilmes(data.results);
 
@@ -96,17 +96,11 @@ const popularFilmesNosGeneros = async (listaGeneros) => {
   );
 };
 
-const obterFilmesCatalogoComCache = processarCache(
-  'filmes_catalogo',
-  HORA_EM_MILISSEGUNDOS,
-  buscarESalvarFilmes
-);
+const obterFilmesCatalogoComCache = () =>
+  processarCache('filmes_catalogo', HORA_EM_MILISSEGUNDOS, buscarESalvarFilmes);
 
-export const obterGenerosComCache = processarCache(
-  'generos',
-  DIA_EM_MILISSEGUNDOS,
-  buscarESalvarGeneros
-);
+export const obterGenerosComCache = () =>
+  processarCache('generos', DIA_EM_MILISSEGUNDOS, buscarESalvarGeneros);
 
 export const buscarFilmes = async ({
   pagina = 1,
@@ -119,7 +113,7 @@ export const buscarFilmes = async ({
     !busca && !generoId && !dataInicio && !dataFim && pagina === 1;
 
   if (semFiltros) {
-    return await obterFilmesCatalogoComCache;
+    return await obterFilmesCatalogoComCache();
   }
 
   const parametros = {
@@ -139,7 +133,10 @@ export const buscarFilmes = async ({
   }
   const filmes = await requisicaoTMDB(endpoint, parametros);
   popularFavoritosNosFilmes(filmes.results);
-  popularGenerosNosFilmes(filmes.results, (await obterGenerosComCache).genres);
+  popularGenerosNosFilmes(
+    filmes.results,
+    (await obterGenerosComCache()).genres
+  );
   return filmes;
 };
 
