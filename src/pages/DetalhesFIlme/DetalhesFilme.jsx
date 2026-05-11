@@ -25,7 +25,9 @@ import { FavoritadosContext } from '@/contexts/FavoritadosContext';
 const DetalhesFilme = () => {
   const { filme } = useLoaderData();
   const { handleFavorite, favoritados } = useContext(FavoritadosContext);
-  const isFavorite = favoritados.some((f) => f.id === filme.id);
+  const isFavorite = favoritados
+    ? favoritados.some((f) => f.id === filme.id)
+    : false;
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
