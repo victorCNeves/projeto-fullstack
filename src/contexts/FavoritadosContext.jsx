@@ -8,7 +8,7 @@ export const FavoritadosProvider = ({ children }) => {
   const handleFavorite = (filme) => {
     const isFav = toggleFavorite(filme);
     if (isFav) {
-      setFavoritados([...favoritados, filme]);
+      setFavoritados(favoritados ? [...favoritados, filme] : filme);
     } else {
       setFavoritados(favoritados.filter((f) => f.id !== filme.id));
     }

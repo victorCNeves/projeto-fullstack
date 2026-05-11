@@ -21,7 +21,9 @@ import { FavoritadosContext } from '@/contexts/FavoritadosContext';
 
 const CardFilme = ({ filme }) => {
   const { handleFavorite, favoritados } = useContext(FavoritadosContext);
-  const isFavorite = favoritados.some((f) => f.id === filme.id);
+  const isFavorite = favoritados
+    ? favoritados.some((f) => f.id === filme.id)
+    : false;
 
   const renderStars = (nota) => {
     const stars = [];
