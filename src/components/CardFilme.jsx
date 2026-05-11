@@ -34,8 +34,9 @@ const CardFilme = ({ filme }) => {
     }
     return stars;
   };
-
-  const posterUrl = `https://image.tmdb.org/t/p/w500${filme.poster_path}`;
+  const posterUrl = filme.poster_path
+    ? `https://image.tmdb.org/t/p/w500${filme.poster_path}`
+    : 'https://placehold.co/500x700?text=No+Image';
 
   return (
     <Card.Root
