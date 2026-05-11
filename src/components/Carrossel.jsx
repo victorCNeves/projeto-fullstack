@@ -16,12 +16,19 @@ const CarrosselFilmes = ({ generoId, titulo, filmes }) => {
   const carregarMaisFilmes = async () => {
     if (carregando) return;
     setCarregando(true);
-    const nextPage = filmes.page + 1;
+    const nextPage = filmesState.page + 1;
     const data = await buscarFilmes({ pagina: nextPage, generoId: generoId });
-    setFilmesState({
-      results: [...filmesState.results, ...data.results],
+    setFilmesState((filmes) => ({
+      ...filmesState,
+      results: [
+        ...filmesState.results,
+        ...data.results.filter(
+          (novo) =>
+            !filmes.results.some((existente) => existente.id === novo.id)
+        ),
+      ],
       page: nextPage,
-    });
+    }));
     setCarregando(false);
   };
 
