@@ -21,7 +21,13 @@ const requisicaoTMDB = async (caminho, parametros = {}) => {
     }
   );
 
-  return response.json();
+  if (!response.ok) {
+    throw new Error(`Erro na requisição: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  return data;
 };
 
 const buscarESalvarGeneros = async () => {
