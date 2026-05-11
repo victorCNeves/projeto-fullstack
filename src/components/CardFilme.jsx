@@ -8,6 +8,7 @@ import {
   Image,
   Text,
 } from '@chakra-ui/react';
+import { useState } from 'react';
 import {
   FaStar,
   FaRegStar,
@@ -16,8 +17,15 @@ import {
   FaRegHeart,
 } from 'react-icons/fa';
 import { Link } from 'react-router';
+import { toggleFavorite } from '@/utils/tmdbUtils';
 
 const CardFilme = ({ filme }) => {
+  const [isFavorite, setIsFavorite] = useState(filme.is_favorite);
+
+  const handleFavorite = () => {
+    const isFav = toggleFavorite(filme);
+    setIsFavorite(isFav);
+  };
   const renderStars = (nota) => {
     const stars = [];
     const fullStars = Math.floor(nota / 2);
@@ -57,10 +65,7 @@ const CardFilme = ({ filme }) => {
           width="100%"
         />
         <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            //TODO: adicionar/remover filme aos favoritos
-          }}
+          onClick={handleFavorite}
           position="absolute"
           top="2"
           right="2"
@@ -70,7 +75,7 @@ const CardFilme = ({ filme }) => {
           borderRadius="full"
           _hover={{ bg: 'blackAlpha.800' }}
         >
-          {filme.is_favorite ? <FaHeart color="red" /> : <FaRegHeart />}
+          {isFavorite ? <FaHeart color="red" /> : <FaRegHeart />}
         </Button>
       </Box>
 

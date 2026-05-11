@@ -142,3 +142,28 @@ export const buscarFilmes = async ({
   popularGenerosNosFilmes(filmes.results, (await obterGenerosComCache).genres);
   return filmes;
 };
+
+export const toggleFavorite = (filme) => {
+  let favoritos = JSON.parse(localStorage.getItem('favoritos') || '[]');
+
+  const isFavorite = favoritos.find((f) => f.id === filme.id);
+
+  if (isFavorite) {
+    favoritos = favoritos.filter((f) => f.id !== filme.id);
+  } else {
+    favoritos.push(filme);
+  }
+
+  filme.is_favorite = !isFavorite;
+
+  const filmes = JSON.parse(
+    localStorage.getItem('filmes_catalogo') || "{'results':[]}"
+  );
+  const filme_catalogo = filmes.results.find((f) => f.id === filme.id);
+  filme_catalogo ? (filme_catalogo.is_favorite = !isFavorite) : null;
+
+  localStorage.setItem('filmes_catalogo', JSON.stringify(filmes));
+
+  localStorage.setItem('favoritos', JSON.stringify(favoritos));
+  return !isFavorite;
+};
