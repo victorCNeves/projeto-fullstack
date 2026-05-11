@@ -154,7 +154,7 @@ export const toggleFavorite = (filme) => {
   filme.is_favorite = !isFavorite;
 
   const filmes = JSON.parse(
-    localStorage.getItem('filmes_catalogo') || "{'results':[]}"
+    localStorage.getItem('filmes_catalogo') || '{"results":[]}'
   );
   const filme_catalogo = filmes.results.find((f) => f.id === filme.id);
   filme_catalogo ? (filme_catalogo.is_favorite = !isFavorite) : null;
