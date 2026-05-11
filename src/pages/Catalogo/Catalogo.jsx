@@ -71,7 +71,11 @@ const Catalogo = () => {
             Array(5)
               .fill(null)
               .map((_, i) => (
-                <Skeleton key={i} minH="600px" borderRadius="md" />
+                <Skeleton
+                  key={`skeleton-${i}`}
+                  minH="600px"
+                  borderRadius="md"
+                />
               ))}
         </SimpleGrid>
       </Container>
