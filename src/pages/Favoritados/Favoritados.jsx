@@ -4,8 +4,7 @@ import { Box, Container, SimpleGrid } from '@chakra-ui/react';
 import { useContext } from 'react';
 
 const Favoritados = () => {
-  const { favoritados, setFavoritados } = useContext(FavoritadosContext);
-  console.log(favoritados);
+  const { favoritados } = useContext(FavoritadosContext);
   return (
     <Box bg="black" minH="100vh" py={10}>
       <Container maxW="container.xl">
