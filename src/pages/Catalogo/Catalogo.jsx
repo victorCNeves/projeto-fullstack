@@ -1,6 +1,13 @@
 import { useLoaderData } from 'react-router';
 import CardFilme from '@/components/CardFilme';
-import { Box, Container, SimpleGrid, Skeleton } from '@chakra-ui/react';
+import {
+  Box,
+  Container,
+  SimpleGrid,
+  Skeleton,
+  Flex,
+  Heading,
+} from '@chakra-ui/react';
 import ContainerBusca from '@/components/ContainerBusca';
 import { BuscaContext } from '@/contexts/BuscaContext';
 import { useContext, useEffect, useState, useRef } from 'react';
@@ -47,7 +54,12 @@ const Catalogo = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !carregando) {
+        if (
+          entry.isIntersecting &&
+          !carregando &&
+          filmes.page < filmes.total_pages &&
+          filmes.results.length > 0
+        ) {
           setParams((param) => ({ ...param, pagina: param.pagina + 1 }));
           setCarregando(true);
         }
@@ -57,7 +69,7 @@ const Catalogo = () => {
 
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
-  }, [carregando]);
+  }, [carregando, filmes.page, filmes.total_pages]);
 
   return (
     <Box bg="black" minH="100vh" py={10}>
@@ -78,6 +90,16 @@ const Catalogo = () => {
                 />
               ))}
         </SimpleGrid>
+        {!carregando && filmes.results.length === 0 && (
+          <Flex
+            minW="full"
+            minH="full"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Heading>Nenhum filme encontrado para essa busca.</Heading>
+          </Flex>
+        )}
       </Container>
       <div ref={ref} />
     </Box>
