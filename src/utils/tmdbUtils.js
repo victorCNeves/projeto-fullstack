@@ -167,3 +167,7 @@ export const toggleFavorite = (filme) => {
 
 export const buscarFavoritos = () =>
   JSON.parse(localStorage.getItem('favoritos'));
+
+export const buscarFilme = (id) => {
+  return requisicaoTMDB(`movie/${id}`);
+};

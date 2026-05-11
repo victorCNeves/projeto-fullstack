@@ -113,7 +113,7 @@ const CardFilme = ({ filme }) => {
       <Card.Footer p="4" pt="0">
         <Button
           as={Link}
-          to={`detalhes/${filme.id}`}
+          to={`/detalhes/${filme.id}`}
           variant="solid"
           colorPalette="teal"
           width="full"
