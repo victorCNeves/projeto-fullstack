@@ -9,16 +9,20 @@ import { buscarFilmes } from '@/utils/tmdbUtils';
 
 const CarrosselFilmes = ({ generoId, titulo, filmes }) => {
   const [filmesState, setFilmesState] = useState(filmes);
+  const [carregando, setCarregando] = useState(false);
   const [visivel, setVisivel] = useState(false);
   const ref = useRef(null);
 
   const carregarMaisFilmes = async () => {
+    if (carregando) return;
+    setCarregando(true);
     const nextPage = filmes.page + 1;
     const data = await buscarFilmes({ pagina: nextPage, generoId: generoId });
     setFilmesState({
       results: [...filmesState.results, ...data.results],
       page: nextPage,
     });
+    setCarregando(false);
   };
 
   useEffect(() => {
@@ -60,6 +64,11 @@ const CarrosselFilmes = ({ generoId, titulo, filmes }) => {
                 <CardFilme filme={filme} />
               </SwiperSlide>
             ))}
+            {carregando && (
+              <SwiperSlide>
+                <Skeleton height="600px" borderRadius="md" />
+              </SwiperSlide>
+            )}
           </Swiper>
         </>
       ) : (

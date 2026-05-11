@@ -1,6 +1,6 @@
 import { useLoaderData } from 'react-router';
 import CardFilme from '@/components/CardFilme';
-import { Box, Container, SimpleGrid } from '@chakra-ui/react';
+import { Box, Container, SimpleGrid, Skeleton } from '@chakra-ui/react';
 import ContainerBusca from '@/components/ContainerBusca';
 import { BuscaContext } from '@/contexts/BuscaContext';
 import { useContext, useEffect, useState, useRef } from 'react';
@@ -9,27 +9,34 @@ import { buscarFilmes } from '@/utils/tmdbUtils';
 const Catalogo = () => {
   const { generos } = useLoaderData();
   const [filmes, setFilmes] = useState(useLoaderData().filmes);
+  const [carregando, setCarregando] = useState(false);
   const { params, setParams } = useContext(BuscaContext);
   const update = useRef(false);
-  const sentinelRef = useRef(null);
+  const ref = useRef(null);
 
   useEffect(() => {
     if (update.current) {
       const carregarDados = async () => {
+        setCarregando(true);
         const data = await buscarFilmes(params);
 
-        setFilmes((filmes) => {
-          const results =
+        setFilmes((filmes) => ({
+          ...filmes,
+          results:
             params.pagina === 1
               ? data.results
-              : [...filmes.results, ...data.results];
-
-          return {
-            ...filmes,
-            results: results,
-            page: params.pagina,
-          };
-        });
+              : [
+                  ...filmes.results,
+                  ...data.results.filter(
+                    (novo) =>
+                      !filmes.results.some(
+                        (existente) => existente.id === novo.id
+                      )
+                  ),
+                ],
+          page: params.pagina,
+        }));
+        setCarregando(false);
       };
       carregarDados();
     } else {
@@ -39,22 +46,18 @@ const Catalogo = () => {
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setParams((param) => {
-            return { ...param, pagina: param.pagina + 1 };
-          });
+      ([entry]) => {
+        if (entry.isIntersecting && !carregando) {
+          setParams((param) => ({ ...param, pagina: param.pagina + 1 }));
+          setCarregando(true);
         }
       },
-      { rootMargin: '100px' }
+      { rootMargin: '200px' }
     );
 
-    if (sentinelRef.current) {
-      observer.observe(sentinelRef.current);
-    }
-
+    if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
-  }, []);
+  }, [carregando]);
 
   return (
     <Box bg="black" minH="100vh" py={10}>
@@ -64,9 +67,15 @@ const Catalogo = () => {
           {filmes.results.map((filme) => (
             <CardFilme key={filme.id} filme={filme} />
           ))}
+          {carregando &&
+            Array(5)
+              .fill(null)
+              .map((_, i) => (
+                <Skeleton key={i} minH="600px" borderRadius="md" />
+              ))}
         </SimpleGrid>
       </Container>
-      <div ref={sentinelRef} />
+      <div ref={ref} />
     </Box>
   );
 };
