@@ -167,3 +167,6 @@ export const toggleFavorite = (filme) => {
   localStorage.setItem('favoritos', JSON.stringify(favoritos));
   return !isFavorite;
 };
+
+export const buscarFavoritos = () =>
+  JSON.parse(localStorage.getItem('favoritos'));

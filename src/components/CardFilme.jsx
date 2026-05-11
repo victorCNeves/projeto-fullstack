@@ -8,7 +8,7 @@ import {
   Image,
   Text,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import {
   FaStar,
   FaRegStar,
@@ -17,15 +17,12 @@ import {
   FaRegHeart,
 } from 'react-icons/fa';
 import { Link } from 'react-router';
-import { toggleFavorite } from '@/utils/tmdbUtils';
+import { FavoritadosContext } from '@/contexts/FavoritadosContext';
 
 const CardFilme = ({ filme }) => {
-  const [isFavorite, setIsFavorite] = useState(filme.is_favorite);
+  const { handleFavorite, favoritados } = useContext(FavoritadosContext);
+  const isFavorite = favoritados.some((f) => f.id === filme.id);
 
-  const handleFavorite = () => {
-    const isFav = toggleFavorite(filme);
-    setIsFavorite(isFav);
-  };
   const renderStars = (nota) => {
     const stars = [];
     const fullStars = Math.floor(nota / 2);
@@ -65,7 +62,7 @@ const CardFilme = ({ filme }) => {
           width="100%"
         />
         <Button
-          onClick={handleFavorite}
+          onClick={() => handleFavorite(filme)}
           position="absolute"
           top="2"
           right="2"
