@@ -183,6 +183,7 @@ const ContainerBusca = ({ generos }) => {
         <Button
           colorPalette="teal"
           px={8}
+          mt={7}
           leftIcon={<FaSearch />}
           onClick={handleFiltrar}
         >
