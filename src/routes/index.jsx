@@ -7,11 +7,13 @@ import { catalogoLoader } from '@/pages/Catalogo/Catalogo.loader';
 import Favoritados from '@/pages/Favoritados/Favoritados';
 import DetalhesFilme from '@/pages/DetalhesFIlme/DetalhesFilme';
 import { detalhesLoader } from '@/pages/DetalhesFIlme/DetalhesFilme.loader';
+import ErrorPage from '@/pages/ErrorPage';
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <App />,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,
