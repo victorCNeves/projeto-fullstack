@@ -9,31 +9,36 @@ import DetalhesFilme from '@/pages/DetalhesFIlme/DetalhesFilme';
 import { detalhesLoader } from '@/pages/DetalhesFIlme/DetalhesFilme.loader';
 import ErrorPage from '@/pages/ErrorPage';
 
-export const router = createBrowserRouter([
+export const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <App />,
+      errorElement: <ErrorPage />,
+      children: [
+        {
+          index: true,
+          Component: Home,
+          loader: homeLoader,
+        },
+        {
+          path: 'catalogo',
+          Component: Catalogo,
+          loader: catalogoLoader,
+        },
+        {
+          path: 'favoritados',
+          Component: Favoritados,
+        },
+        {
+          path: 'detalhes/:id',
+          Component: DetalhesFilme,
+          loader: detalhesLoader,
+        },
+      ],
+    },
+  ],
   {
-    path: '/',
-    element: <App />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
-        index: true,
-        Component: Home,
-        loader: homeLoader,
-      },
-      {
-        path: 'catalogo',
-        Component: Catalogo,
-        loader: catalogoLoader,
-      },
-      {
-        path: 'favoritados',
-        Component: Favoritados,
-      },
-      {
-        path: 'detalhes/:id',
-        Component: DetalhesFilme,
-        loader: detalhesLoader,
-      },
-    ],
-  },
-]);
+    basename: '/projeto-fullstack',
+  }
+);
