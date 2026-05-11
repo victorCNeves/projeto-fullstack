@@ -58,11 +58,13 @@ const CarrosselFilmes = ({ generoId, titulo, filmes }) => {
             slidesPerView={1.5}
             navigation
             mousewheel={{ forceToAxis: true }}
+            observeParents={true}
+            watchSlidesProgress={true}
             breakpoints={{
-              480: { slidesPerView: 2.5 },
-              768: { slidesPerView: 3.5 },
-              1024: { slidesPerView: 4.5 },
-              1440: { slidesPerView: 5.5 },
+              480: { slidesPerView: 2.5, slidesPerGroup: 1 },
+              768: { slidesPerView: 3.5, slidesPerGroup: 1 },
+              1024: { slidesPerView: 4.5, slidesPerGroup: 2 },
+              1440: { slidesPerView: 5.5, slidesPerGroup: 3 },
             }}
             onReachEnd={carregarMaisFilmes}
           >
@@ -71,11 +73,14 @@ const CarrosselFilmes = ({ generoId, titulo, filmes }) => {
                 <CardFilme filme={filme} />
               </SwiperSlide>
             ))}
-            {carregando && (
-              <SwiperSlide>
-                <Skeleton height="600px" borderRadius="md" />
-              </SwiperSlide>
-            )}
+            {carregando &&
+              Array(10)
+                .fill(null)
+                .map((_, i) => (
+                  <SwiperSlide key={`skeleton-${i}`}>
+                    <Skeleton height="600px" borderRadius="md" />
+                  </SwiperSlide>
+                ))}
           </Swiper>
         </>
       ) : (
