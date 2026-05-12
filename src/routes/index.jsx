@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router';
+import { createHashRouter } from 'react-router';
 import App from '@/App';
 import Home from '@/pages/Home/Home';
 import { homeLoader } from '@/pages/Home/Home.loader';
@@ -9,7 +9,7 @@ import DetalhesFilme from '@/pages/DetalhesFIlme/DetalhesFilme';
 import { detalhesLoader } from '@/pages/DetalhesFIlme/DetalhesFilme.loader';
 import ErrorPage from '@/pages/ErrorPage';
 
-export const router = createBrowserRouter(
+export const router = createHashRouter(
   [
     {
       path: '/',
