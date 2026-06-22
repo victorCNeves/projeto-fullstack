@@ -53,6 +53,10 @@ const ContainerBusca = ({ generos }) => {
       dataInicio: '',
       dataFim: '',
     });
+    setBusca('');
+    setGenero([]);
+    setDataInicial('');
+    setDataFinal('');
   };
 
   useEffect(() => {
