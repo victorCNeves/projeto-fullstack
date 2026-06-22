@@ -213,8 +213,8 @@ const DetalhesFilme = () => {
                 onClick={() => handleFavorite(filme)}
                 colorPalette="teal"
                 variant={isFavorite ? 'solid' : 'outline'}
-                leftIcon={isFavorite ? <FaHeart /> : <FaRegHeart />}
               >
+                {isFavorite ? <FaHeart /> : <FaRegHeart />}
                 {isFavorite ? 'Favoritado' : 'Favoritar'}
               </Button>
               <Button as={Link} to={-1} variant="ghost" color="gray.400">
