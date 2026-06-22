@@ -5,7 +5,8 @@ export const FavoritadosContext = createContext();
 
 export const FavoritadosProvider = ({ children }) => {
   const [favoritados, setFavoritados] = useState(buscarFavoritos);
-  const handleFavorite = (filme) => {
+  const handleFavorite = (filme, e) => {
+    e?.preventDefault();
     const isFav = toggleFavorite(filme);
     if (isFav) {
       setFavoritados(favoritados ? [...favoritados, filme] : filme);

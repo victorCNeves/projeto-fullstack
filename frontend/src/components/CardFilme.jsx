@@ -66,7 +66,7 @@ const CardFilme = ({ filme }) => {
           width="100%"
         />
         <Button
-          onClick={() => handleFavorite(filme)}
+          onClick={(e) => handleFavorite(filme, e)}
           position="absolute"
           top="2"
           right="2"
