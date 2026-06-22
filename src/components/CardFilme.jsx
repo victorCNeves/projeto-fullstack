@@ -53,6 +53,8 @@ const CardFilme = ({ filme }) => {
       bg="gray.900"
       transition="all 0.2s ease"
       _hover={{ transform: 'translateY(-10px)', cursor: 'pointer' }}
+      as={Link}
+      to={`/detalhes/${filme.id}`}
     >
       <Box position="relative">
         <Image
@@ -94,7 +96,7 @@ const CardFilme = ({ filme }) => {
           Lançamento: {new Date(filme.release_date).toLocaleDateString('pt-BR')}
         </Text>
 
-        <Card.Description lineClamp={2} color="gray.300">
+        <Card.Description lineClamp={2} color="gray.300" title={filme.overview}>
           {filme.overview}
         </Card.Description>
 
@@ -113,13 +115,7 @@ const CardFilme = ({ filme }) => {
       </Card.Body>
 
       <Card.Footer p="4" pt="0">
-        <Button
-          as={Link}
-          to={`/detalhes/${filme.id}`}
-          variant="solid"
-          colorPalette="teal"
-          width="full"
-        >
+        <Button variant="solid" colorPalette="teal" width="full">
           Ver Detalhes
         </Button>
       </Card.Footer>
