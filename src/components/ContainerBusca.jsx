@@ -10,9 +10,10 @@ import {
   Portal,
   Link,
   createListCollection,
+  Icon,
 } from '@chakra-ui/react';
-import { useContext, useMemo, useState } from 'react';
-import { FaSearch, FaExclamationTriangle } from 'react-icons/fa';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { FaSearch, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 
 const ContainerBusca = ({ generos }) => {
   const collection = useMemo(
@@ -42,6 +43,31 @@ const ContainerBusca = ({ generos }) => {
     });
   };
 
+  const handleFiltrarRef = useRef(handleFiltrar);
+
+  const handleLimpar = () => {
+    setParams({
+      pagina: 1,
+      busca: '',
+      generoId: '',
+      dataInicio: '',
+      dataFim: '',
+    });
+  };
+
+  useEffect(() => {
+    handleFiltrarRef.current = handleFiltrar;
+  });
+
+  useEffect(() => {
+    const checkEnter = (e) => {
+      if (e.key === 'Enter') handleFiltrarRef.current();
+    };
+
+    window.addEventListener('keydown', checkEnter);
+    return () => window.removeEventListener('keydown', checkEnter);
+  }, []);
+
   return (
     <Stack gap={8} mb={10}>
       <Flex
@@ -64,6 +90,7 @@ const ContainerBusca = ({ generos }) => {
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             _focus={{ ring: 2, ringColor: 'teal.500' }}
+            _hover={{ bg: 'gray.700' }}
           />
           <Flex align="center" gap={1} mt={2} color="orange.400">
             <FaExclamationTriangle size="10px" />
@@ -158,6 +185,7 @@ const ContainerBusca = ({ generos }) => {
                 filter: 'invert(1)',
               },
             }}
+            _hover={{ bg: 'gray.700' }}
           />
         </Box>
 
@@ -177,18 +205,36 @@ const ContainerBusca = ({ generos }) => {
                 filter: 'invert(1)',
               },
             }}
+            _hover={{ bg: 'gray.700' }}
           />
         </Box>
 
-        <Button
-          colorPalette="teal"
-          px={8}
-          mt={7}
-          leftIcon={<FaSearch />}
-          onClick={handleFiltrar}
+        <Box
+          flex="1"
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
         >
-          Filtrar
-        </Button>
+          <Button
+            colorPalette="teal"
+            px={8}
+            mb={4}
+            onClick={handleFiltrar}
+            variant="solid"
+          >
+            <Icon as={FaSearch} position="absolute" left={5} />
+            Filtrar
+          </Button>
+          <Button
+            colorPalette="red"
+            px={8}
+            onClick={handleLimpar}
+            variant="subtle"
+          >
+            <Icon as={FaTimes} position="absolute" left={5} />
+            Limpar Filtro
+          </Button>
+        </Box>
       </Flex>
     </Stack>
   );
