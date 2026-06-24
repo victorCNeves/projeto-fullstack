@@ -10,12 +10,12 @@ const app = express();
 try {
   await connectDB();
 } catch (error) {
-  console.error('Erro ao conectar no banco ', error);
+  console.error('[auth-service] Erro ao conectar no banco ', error);
 }
 
 app.use(express.json());
 app.use(cors());
-app.use(morgan('dev'));
+app.use(morgan('[auth-service] :method :url :status :response-time ms'));
 app.use(helmet());
 
 app.use(router);
@@ -28,5 +28,5 @@ app.use((error, req, res, next) => {
 });
 
 app.listen(process.env.PORT, () => {
-  console.log(`auth-service rodando na porta ${process.env.PORT}`);
+  console.log(`[auth-service] Rodando na porta ${process.env.PORT}`);
 });

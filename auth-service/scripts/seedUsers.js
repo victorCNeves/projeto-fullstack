@@ -4,9 +4,8 @@ import connectDB from '../src/config/db.js';
 
 try {
   await connectDB();
-  console.log('Conectado ao Mongo');
 } catch (error) {
-  console.error('Erro ao conectar no banco ', error);
+  console.error('[auth-service] Erro ao conectar no banco ', error);
 }
 
 const SALT_ROUNDS = 10;
@@ -41,7 +40,7 @@ const usersHash = users.map((user) => ({
 }));
 
 try {
-  console.log(await User.insertMany(usersHash));
+  console.log(`[auth-service]  ${await User.insertMany(usersHash)}`);
 } catch (error) {
-  console.error(error);
+  console.error(`[auth-service] ${error}`);
 }
