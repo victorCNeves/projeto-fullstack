@@ -78,6 +78,10 @@ const logout = async (req, res, next) => {
     ) {
       return res.status(401).json({ error: 'Token inválido ou expirado.' });
     }
+
+    if (error.code === 11000) {
+      return res.status(204).send();
+    }
     next(error);
   }
 };
