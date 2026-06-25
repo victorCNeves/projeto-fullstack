@@ -1,6 +1,6 @@
-import { obterGenerosComCache } from '@/utils/tmdbUtils';
+import { buscarGeneros } from '@/utils/tmdbUtils';
 
 export const homeLoader = async () => {
-  const generos = (await obterGenerosComCache()).genres;
+  const generos = (await buscarGeneros()).genres;
   return { generos };
 };
