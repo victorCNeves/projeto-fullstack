@@ -1,0 +1,27 @@
+{
+  "name": "projeto1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix auth-service\" \"npm run dev --prefix resource-service\" \"npm run dev --prefix notification-service\"",
+    "install-all": "npm install && npm install --prefix frontend && npm install --prefix auth-service && npm install --prefix resource-service && npm install --prefix notification-service",
+    "seed": "npm run seed --prefix auth-service && npm run seed --prefix resource-service",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/victorCNeves/projeto-fullstack.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/victorCNeves/projeto-fullstack/issues"
+  },
+  "homepage": "https://github.com/victorCNeves/projeto-fullstack#readme",
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}
