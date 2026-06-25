@@ -1,12 +1,7 @@
 import bcrypt from 'bcrypt';
+import mongoose from 'mongoose';
 import User from '../src/models/User.js';
 import connectDB from '../src/config/db.js';
-
-try {
-  await connectDB();
-} catch (error) {
-  console.error('[auth-service] Erro ao conectar no banco ', error);
-}
 
 const SALT_ROUNDS = 10;
 
@@ -34,13 +29,38 @@ const users = [
   { username: 'mateus_lopes', password: 'keychain_4455' },
 ];
 
-const usersHash = users.map((user) => ({
-  username: user.username,
-  password: bcrypt.hashSync(user.password, SALT_ROUNDS),
-}));
+const hashUserPasswords = (userList) => {
+  return userList.map((user) => ({
+    username: user.username,
+    password: bcrypt.hashSync(user.password, SALT_ROUNDS),
+  }));
+};
 
-try {
-  console.log(`[auth-service]  ${await User.insertMany(usersHash)}`);
-} catch (error) {
-  console.error(`[auth-service] ${error}`);
-}
+const run = async () => {
+  try {
+    await connectDB();
+  } catch (error) {
+    console.error('[auth-service] Erro ao conectar no banco:', error);
+    process.exit(1);
+  }
+
+  try {
+    const usersHash = hashUserPasswords(users);
+    console.log('[auth-service] Terminei criptografia das senhas');
+
+    await User.insertMany(usersHash, { ordered: false });
+    console.log('[auth-service] Terminei usuários');
+
+    console.log('[auth-service] Seed concluído');
+
+    await mongoose.disconnect();
+    process.exit(0);
+  } catch (error) {
+    console.error('[auth-service] Erro ao salvar usuários:', error);
+
+    await mongoose.disconnect().catch(() => {});
+    process.exit(1);
+  }
+};
+
+await run();
