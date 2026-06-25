@@ -1,8 +1,8 @@
-import { buscarFilmes, obterGenerosComCache } from '@/utils/tmdbUtils';
+import { buscarFilmes, buscarGeneros } from '@/utils/tmdbUtils';
 
 export const catalogoLoader = async () => {
   const filmes = await buscarFilmes();
-  const generos = (await obterGenerosComCache()).genres;
+  const generos = (await buscarGeneros()).genres;
 
   return { filmes, generos };
 };

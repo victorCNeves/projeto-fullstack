@@ -14,20 +14,43 @@ import {
   FaStarHalfAlt,
   FaHeart,
   FaRegHeart,
-  FaClock,
   FaCalendar,
   FaGlobe,
+  FaEdit,
+  FaTrash,
 } from 'react-icons/fa';
-import { Link, useLoaderData } from 'react-router';
-import { useContext, useEffect } from 'react';
-import { FavoritadosContext } from '@/contexts/FavoritadosContext';
+import { Link, useLoaderData, useNavigate, useSubmit } from 'react-router';
+import { useContext, useEffect, useState } from 'react';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 
 const DetalhesFilme = () => {
-  const { filme } = useLoaderData();
-  const { handleFavorite, favoritados } = useContext(FavoritadosContext);
-  const isFavorite = favoritados
-    ? favoritados.some((f) => f.id === filme.id)
-    : false;
+  const loaderData = useLoaderData();
+  const { userId } = loaderData;
+  const [filme, setFilme] = useState(loaderData.filme);
+  const navigate = useNavigate();
+  const { lastMessage } = useWebSocket();
+  const submit = useSubmit();
+
+  const isOwner = userId === filme.created_by;
+
+  useEffect(() => {
+    if (!lastMessage) return;
+
+    const { event, data } = lastMessage;
+    const incomingId = data._id || data.id;
+    const currentId = filme._id || filme.id;
+
+    if (incomingId === currentId) {
+      if (event === 'resource.updated') {
+        setFilme((prev) => ({ ...prev, ...data }));
+      }
+
+      if (event === 'resource.deleted') {
+        alert('Este filme acabou de ser removido pelo proprietário.');
+        navigate('/');
+      }
+    }
+  }, [lastMessage, navigate]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -61,18 +84,15 @@ const DetalhesFilme = () => {
     return stars;
   };
 
-  const formatCurrency = (value) =>
-    value > 0
-      ? new Intl.NumberFormat('pt-BR', {
-          style: 'currency',
-          currency: 'USD',
-          notation: 'compact',
-        }).format(value)
-      : '—';
+  const handleConfirmDelete = () => {
+    const confirmacao = window.confirm(
+      `Tem certeza que deseja deletar "${filme.title}"? Esta ação não poderá ser desfeita.`
+    );
 
-  const runtime = filme.runtime
-    ? `${Math.floor(filme.runtime / 60)}h ${filme.runtime % 60}min`
-    : '—';
+    if (confirmacao) {
+      submit(null, { method: 'post', action: `/detalhes/${filme.id}/deletar` });
+    }
+  };
 
   return (
     <Box bg="gray.950" minH="100vh">
@@ -164,10 +184,10 @@ const DetalhesFilme = () => {
                 {renderStars(filme.vote_average)}
               </Flex>
               <Text color="white" fontWeight="bold">
-                {filme.vote_average.toFixed(1)}
+                {filme.vote_average?.toFixed(1)}
               </Text>
               <Text color="gray.500" fontSize="sm">
-                ({filme.vote_count.toLocaleString('pt-BR')} votos)
+                ({filme.vote_count?.toLocaleString('pt-BR')} votos)
               </Text>
             </Flex>
 
@@ -177,10 +197,6 @@ const DetalhesFilme = () => {
                 <Text>
                   {new Date(filme.release_date).toLocaleDateString('pt-BR')}
                 </Text>
-              </Flex>
-              <Flex align="center" gap={2} color="gray.400" fontSize="sm">
-                <Icon as={FaClock} />
-                <Text>{runtime}</Text>
               </Flex>
               {filme.homepage && (
                 <Flex align="center" gap={2} color="gray.400" fontSize="sm">
@@ -209,109 +225,32 @@ const DetalhesFilme = () => {
             </Text>
 
             <Flex gap={3} flexWrap="wrap">
-              <Button
-                onClick={() => handleFavorite(filme)}
-                colorPalette="teal"
-                variant={isFavorite ? 'solid' : 'outline'}
-              >
-                {isFavorite ? <FaHeart /> : <FaRegHeart />}
-                {isFavorite ? 'Favoritado' : 'Favoritar'}
-              </Button>
+              {isOwner && (
+                <>
+                  <Button
+                    as={Link}
+                    to={`/detalhes/${filme.id}/editar`}
+                    colorPalette="blue"
+                    variant="solid"
+                  >
+                    <FaEdit /> Editar
+                  </Button>
+
+                  <Button
+                    colorPalette="red"
+                    variant="outline"
+                    onClick={handleConfirmDelete}
+                  >
+                    <FaTrash /> Deletar
+                  </Button>
+                </>
+              )}
+
               <Button as={Link} to={-1} variant="ghost" color="gray.400">
                 Voltar
               </Button>
             </Flex>
           </Box>
-        </Flex>
-
-        <Flex
-          mt={12}
-          gap={6}
-          direction={{ base: 'column', md: 'row' }}
-          flexWrap="wrap"
-        >
-          {(filme.budget > 0 || filme.revenue > 0) && (
-            <Box bg="gray.900" borderRadius="xl" p={6} flex={1} minW="220px">
-              <Text
-                color="gray.500"
-                fontSize="xs"
-                textTransform="uppercase"
-                letterSpacing="wider"
-                mb={3}
-              >
-                Finanças
-              </Text>
-              <Flex direction="column" gap={2}>
-                <Flex justify="space-between">
-                  <Text color="gray.400" fontSize="sm">
-                    Orçamento
-                  </Text>
-                  <Text color="white" fontSize="sm" fontWeight="semibold">
-                    {formatCurrency(filme.budget)}
-                  </Text>
-                </Flex>
-                <Flex justify="space-between">
-                  <Text color="gray.400" fontSize="sm">
-                    Receita
-                  </Text>
-                  <Text color="teal.400" fontSize="sm" fontWeight="semibold">
-                    {formatCurrency(filme.revenue)}
-                  </Text>
-                </Flex>
-              </Flex>
-            </Box>
-          )}
-
-          {filme.production_companies?.length > 0 && (
-            <Box bg="gray.900" borderRadius="xl" p={6} flex={2} minW="280px">
-              <Text
-                color="gray.500"
-                fontSize="xs"
-                textTransform="uppercase"
-                letterSpacing="wider"
-                mb={3}
-              >
-                Produção
-              </Text>
-              <Flex gap={4} flexWrap="wrap" align="center">
-                {filme.production_companies.map((company) => (
-                  <Flex key={company.id} align="center" gap={2}>
-                    {company.logo_path ? (
-                      <Image
-                        src={`https://image.tmdb.org/t/p/w200${company.logo_path}`}
-                        alt={company.name}
-                        h="24px"
-                        objectFit="contain"
-                        filter="brightness(0) invert(1)"
-                        opacity={0.6}
-                      />
-                    ) : (
-                      <Text color="gray.400" fontSize="sm">
-                        {company.name}
-                      </Text>
-                    )}
-                  </Flex>
-                ))}
-              </Flex>
-            </Box>
-          )}
-
-          {filme.belongs_to_collection && (
-            <Box bg="gray.900" borderRadius="xl" p={6} flex={1} minW="220px">
-              <Text
-                color="gray.500"
-                fontSize="xs"
-                textTransform="uppercase"
-                letterSpacing="wider"
-                mb={2}
-              >
-                Coleção
-              </Text>
-              <Text color="white" fontSize="sm" fontWeight="semibold">
-                {filme.belongs_to_collection.name}
-              </Text>
-            </Box>
-          )}
         </Flex>
       </Container>
     </Box>

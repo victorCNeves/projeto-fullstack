@@ -17,14 +17,8 @@ import {
   FaRegHeart,
 } from 'react-icons/fa';
 import { Link } from 'react-router';
-import { FavoritadosContext } from '@/contexts/FavoritadosContext';
 
 const CardFilme = ({ filme }) => {
-  const { handleFavorite, favoritados } = useContext(FavoritadosContext);
-  const isFavorite = favoritados
-    ? favoritados.some((f) => f.id === filme.id)
-    : false;
-
   const renderStars = (nota) => {
     const stars = [];
     const fullStars = Math.floor(nota / 2);
@@ -65,19 +59,6 @@ const CardFilme = ({ filme }) => {
           height="400px"
           width="100%"
         />
-        <Button
-          onClick={(e) => handleFavorite(filme, e)}
-          position="absolute"
-          top="2"
-          right="2"
-          variant="ghost"
-          colorPalette="teal"
-          bg="blackAlpha.600"
-          borderRadius="full"
-          _hover={{ bg: 'blackAlpha.800' }}
-        >
-          {isFavorite ? <FaHeart color="red" /> : <FaRegHeart />}
-        </Button>
       </Box>
 
       <Card.Body gap="2" p="4">

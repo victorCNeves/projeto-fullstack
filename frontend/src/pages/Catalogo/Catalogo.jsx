@@ -12,6 +12,7 @@ import ContainerBusca from '@/components/ContainerBusca';
 import { BuscaContext } from '@/contexts/BuscaContext';
 import { useContext, useEffect, useState, useRef } from 'react';
 import { buscarFilmes } from '@/utils/tmdbUtils';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 
 const Catalogo = () => {
   const { generos } = useLoaderData();
@@ -20,6 +21,44 @@ const Catalogo = () => {
   const { params, setParams } = useContext(BuscaContext);
   const update = useRef(false);
   const ref = useRef(null);
+  const { lastMessage } = useWebSocket();
+
+  useEffect(() => {
+    if (!lastMessage) return;
+
+    const { event, data } = lastMessage;
+    const incomingId = data._id || data.id;
+
+    switch (event) {
+      case 'resource.created':
+        setFilmes((prev) => ({
+          ...prev,
+          results: [data, ...prev.results],
+        }));
+        break;
+
+      case 'resource.updated':
+        setFilmes((prev) => ({
+          ...prev,
+          results: prev.results.map((f) =>
+            f.id === incomingId || f._id === incomingId ? { ...f, ...data } : f
+          ),
+        }));
+        break;
+
+      case 'resource.deleted':
+        setFilmes((prev) => ({
+          ...prev,
+          results: prev.results.filter(
+            (f) => f.id !== incomingId && f._id !== incomingId
+          ),
+        }));
+        break;
+
+      default:
+        break;
+    }
+  }, [lastMessage]);
 
   useEffect(() => {
     if (update.current) {

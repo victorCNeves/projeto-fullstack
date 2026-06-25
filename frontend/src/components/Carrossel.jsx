@@ -6,12 +6,78 @@ import { Navigation, Mousewheel } from 'swiper/modules';
 import CardFilme from './CardFilme';
 import { useState, useRef, useEffect } from 'react';
 import { buscarFilmes } from '@/utils/tmdbUtils';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 
 const CarrosselFilmes = ({ generoId, titulo, filmes }) => {
   const [filmesState, setFilmesState] = useState(filmes);
   const [carregando, setCarregando] = useState(false);
   const [visivel, setVisivel] = useState(false);
   const ref = useRef(null);
+
+  const { lastMessage } = useWebSocket();
+
+  useEffect(() => {
+    if (!lastMessage) return;
+
+    const { event, data } = lastMessage;
+    const incomingId = data._id || data.id;
+
+    const movieGenres = data.genre_ids || [];
+
+    const belongsToThisCarousel = movieGenres.includes(generoId);
+
+    setFilmesState((prev) => {
+      const exists = prev.results.some(
+        (f) => f.id === incomingId || f._id === incomingId
+      );
+
+      switch (event) {
+        case 'resource.created':
+          if (belongsToThisCarousel && !exists) {
+            return { ...prev, results: [data, ...prev.results] };
+          }
+          return prev;
+
+        case 'resource.updated':
+          if (belongsToThisCarousel) {
+            if (exists) {
+              return {
+                ...prev,
+                results: prev.results.map((f) =>
+                  f.id === incomingId || f._id === incomingId
+                    ? { ...f, ...data }
+                    : f
+                ),
+              };
+            } else {
+              return { ...prev, results: [data, ...prev.results] };
+            }
+          } else if (exists) {
+            return {
+              ...prev,
+              results: prev.results.filter(
+                (f) => f.id !== incomingId && f._id !== incomingId
+              ),
+            };
+          }
+          return prev;
+
+        case 'resource.deleted':
+          if (exists) {
+            return {
+              ...prev,
+              results: prev.results.filter(
+                (f) => f.id !== incomingId && f._id !== incomingId
+              ),
+            };
+          }
+          return prev;
+
+        default:
+          return prev;
+      }
+    });
+  }, [lastMessage, generoId]);
 
   const carregarMaisFilmes = async () => {
     if (carregando) return;

@@ -1,6 +1,9 @@
-import { buscarFilme } from '@/utils/tmdbUtils';
+import { validate } from '@/utils/authUtils';
+import { buscarFilme, buscarGeneros } from '@/utils/tmdbUtils';
 
 export const detalhesLoader = async ({ params }) => {
   const filme = await buscarFilme(params.id);
-  return { filme };
+  const userId = await validate();
+  const genres = (await buscarGeneros()).genres;
+  return { filme, userId, genres };
 };
