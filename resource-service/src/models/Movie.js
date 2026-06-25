@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const movieSchema = new mongoose.Schema(
   {
-    createdBy: {
+    created_by: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
@@ -10,7 +10,7 @@ const movieSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    originalTitle: {
+    original_title: {
       type: String,
       required: false,
     },
@@ -18,15 +18,15 @@ const movieSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    originalLanguage: {
+    original_language: {
       type: String,
       required: false,
     },
-    releaseDate: {
+    release_date: {
       type: Date,
       required: false,
     },
-    genreIds: {
+    genre_ids: {
       type: [Number],
       required: false,
     },
@@ -34,25 +34,28 @@ const movieSchema = new mongoose.Schema(
       type: Number,
       required: false,
     },
-    voteAverage: {
+    vote_average: {
       type: Number,
       required: false,
     },
-    voteCount: {
+    vote_count: {
       type: Number,
       required: false,
     },
-    posterPath: {
+    poster_path: {
       type: String,
       required: false,
     },
-    backdropPath: {
+    backdrop_path: {
       type: String,
       required: false,
     },
   },
   {
-    timestamps: true,
+    timestamps: {
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
+    },
   }
 );
 

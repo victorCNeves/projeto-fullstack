@@ -66,7 +66,7 @@ const fetchMoviePage = async (page, userId) => {
   const data = await response.json();
   return data.results.map(({ adult, id, video, ...rest }) => ({
     ...rest,
-    createdBy: userId,
+    created_by: userId,
   }));
 };
 
@@ -104,9 +104,9 @@ const processBatch = async (startPage, endPage, userId) => {
 
   const results = await Promise.all(promises);
   const flatMovies = results.flat();
-  const convertedMovies = convertMovieDataCasing(flatMovies);
-
-  await Movie.insertMany(convertedMovies, { ordered: false });
+  // const convertedMovies = convertMovieDataCasing(flatMovies);
+  // console.log(flatMovies);
+  await Movie.insertMany(flatMovies, { ordered: false });
 };
 
 const run = async () => {

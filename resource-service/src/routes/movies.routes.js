@@ -21,34 +21,34 @@ const validate = (req, res, next) => {
 
 const commonMovieRules = [
   body('overview').optional().trim(),
-  body('originalTitle').optional().trim(),
-  body('originalLanguage').optional().trim(),
-  body('releaseDate')
+  body('original_title').optional().trim(),
+  body('original_language').optional().trim(),
+  body('release_date')
     .optional()
     .isISO8601()
     .withMessage('Data de lançamento inválida.'),
-  body('genreIds')
+  body('genre_ids')
     .optional()
     .isArray()
-    .withMessage('genreIds deve ser um array.'),
-  body('genreIds.*')
+    .withMessage('genre_ids deve ser um array.'),
+  body('genre_ids.*')
     .optional()
     .isInt()
-    .withMessage('genreIds deve conter números inteiros.'),
+    .withMessage('genre_ids deve conter números inteiros.'),
   body('popularity')
     .optional()
     .isFloat({ min: 0 })
     .withMessage('Popularidade inválida.'),
-  body('voteAverage')
+  body('vote_average')
     .optional()
     .isFloat({ min: 0, max: 10 })
-    .withMessage('voteAverage deve estar entre 0 e 10.'),
-  body('voteCount')
+    .withMessage('vote_average deve estar entre 0 e 10.'),
+  body('vote_count')
     .optional()
     .isInt({ min: 0 })
-    .withMessage('voteCount inválido.'),
-  body('posterPath').optional().trim(),
-  body('backdropPath').optional().trim(),
+    .withMessage('vote_count inválido.'),
+  body('poster_path').optional().trim(),
+  body('backdrop_path').optional().trim(),
 ];
 
 const createRules = [
@@ -84,13 +84,13 @@ const getAll = async (req, res, next) => {
     if (query) {
       matchStage.title = { $regex: query, $options: 'i' };
     } else {
-      if (with_genres) matchStage.genreIds = Number(with_genres);
+      if (with_genres) matchStage.genre_ids = Number(with_genres);
       if (primary_release_date_gte || primary_release_date_lte) {
-        matchStage.releaseDate = {};
+        matchStage.release_date = {};
         if (primary_release_date_gte)
-          matchStage.releaseDate.$gte = new Date(primary_release_date_gte);
+          matchStage.release_date.$gte = new Date(primary_release_date_gte);
         if (primary_release_date_lte)
-          matchStage.releaseDate.$lte = new Date(primary_release_date_lte);
+          matchStage.release_date.$lte = new Date(primary_release_date_lte);
       }
     }
 
@@ -117,7 +117,7 @@ const getAll = async (req, res, next) => {
       page: pageNumber,
       total_results: total,
       total_pages: Math.ceil(total / limitNumber),
-      results,
+      results: results.map((movie) => ({ id: movie._id, ...movie })),
     });
   } catch (error) {
     next(error);
@@ -126,9 +126,9 @@ const getAll = async (req, res, next) => {
 
 const getById = async (req, res, next) => {
   try {
-    const movie = await Movie.findById(req.params.id);
+    const movie = await Movie.findById(req.params.id).lean();
     if (!movie) return res.status(404).json({ error: 'Filme não encontrado.' });
-    res.json(movie);
+    res.json({ ...movie, id: movie._id });
   } catch (error) {
     next(error);
   }
@@ -137,9 +137,9 @@ const getById = async (req, res, next) => {
 const create = async (req, res, next) => {
   try {
     const data = matchedData(req, { locations: ['body'] });
-    const movie = await Movie.create({ ...data, createdBy: req.userId });
+    const movie = await Movie.create({ ...data, created_by: req.userId });
 
-    await publish('resource.created', { id: movie._id, title: movie.title });
+    await publish('resource.created', movie);
     await invalidateCache();
 
     console.log(
@@ -156,7 +156,7 @@ const update = async (req, res, next) => {
     const movie = await Movie.findById(req.params.id);
     if (!movie) return res.status(404).json({ error: 'Filme não encontrado.' });
 
-    if (!movie.createdBy || movie.createdBy.toString() !== req.userId) {
+    if (!movie.created_by || movie.created_by.toString() !== req.userId) {
       return res.status(403).json({ error: 'Acesso negado.' });
     }
 
@@ -167,10 +167,7 @@ const update = async (req, res, next) => {
       { new: true }
     );
 
-    await publish('resource.updated', {
-      id: updated._id,
-      title: updated.title,
-    });
+    await publish('resource.updated', updated);
     await invalidateCache();
 
     console.log(
@@ -187,16 +184,13 @@ const remove = async (req, res, next) => {
     const movie = await Movie.findById(req.params.id);
     if (!movie) return res.status(404).json({ error: 'Filme não encontrado.' });
 
-    if (!movie.createdBy || movie.createdBy.toString() !== req.userId) {
+    if (!movie.created_by || movie.created_by.toString() !== req.userId) {
       return res.status(403).json({ error: 'Acesso negado.' });
     }
 
     await Movie.findByIdAndDelete(req.params.id);
 
-    await publish('resource.deleted', {
-      id: req.params.id,
-      title: movie.title,
-    });
+    await publish('resource.deleted', { _id: req.params.id });
     await invalidateCache();
 
     console.log(

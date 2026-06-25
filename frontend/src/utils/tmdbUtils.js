@@ -1,88 +1,47 @@
-const DIA_EM_MILISSEGUNDOS = 1000 * 60 * 60 * 24;
-const HORA_EM_MILISSEGUNDOS = 1000 * 60 * 60;
-const MARGEM_REVALIDACAO = 1000 * 60 * 10;
+import { getToken } from './authUtils';
+import { redirect } from 'react-router';
+
+const fetchApi = async (endpoint, options = {}) => {
+  try {
+    const url = endpoint.startsWith('http')
+      ? endpoint
+      : `${import.meta.env.VITE_API_BASE_URL}${endpoint}`;
+
+    const headers = {
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+      Authorization: `Bearer ${getToken()}`,
+      ...options.headers,
+    };
+
+    const response = await fetch(url, { ...options, headers });
+
+    if (!response.ok) {
+      throw new Error(`Erro na requisição: ${response.status}`);
+    }
+
+    if (response.status === 204) return null;
+
+    return await response.json();
+  } catch (error) {
+    console.error(`Falha na API (${endpoint}):`, error);
+    throw error;
+  }
+};
 
 const requisicaoTMDB = async (caminho, parametros = {}) => {
-  const params = new URLSearchParams({
-    language: 'pt-BR',
-    include_adult: 'false',
-    include_video: 'false',
-    ...parametros,
-  });
-
-  const response = await fetch(
-    `${import.meta.env.VITE_API_BASE_URL}${caminho}?${params}`,
-    {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-        Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`Erro na requisição: ${response.status}`);
-  }
-
-  const data = await response.json();
-
-  return data;
-};
-
-const buscarESalvarGeneros = async () => {
-  const data = await requisicaoTMDB('genre/movie/list');
-
-  data.genres = await popularFilmesNosGeneros(data.genres);
-  data.timestamp = Date.now();
-
-  localStorage.setItem('generos', JSON.stringify(data));
-  return data;
-};
-
-const buscarESalvarFilmes = async () => {
-  const data = await requisicaoTMDB('discover/movie', {
-    sort_by: 'popularity.desc',
-    page: '1',
-  });
-  const generos = await obterGenerosComCache();
-  popularGenerosNosFilmes(data.results, generos.genres);
-  popularFavoritosNosFilmes(data.results);
-
-  data.timestamp = Date.now();
-  localStorage.setItem('filmes_catalogo', JSON.stringify(data));
-  return data;
-};
-
-const processarCache = async (chave, tempoExpiracao, buscaAssincrona) => {
-  const cache = JSON.parse(localStorage.getItem(chave));
-  const agora = Date.now();
-  const tempoPassado = cache ? agora - cache.timestamp : Infinity;
-
-  if (tempoPassado < tempoExpiracao) {
-    if (tempoPassado > tempoExpiracao - MARGEM_REVALIDACAO) {
-      buscaAssincrona();
-    }
-    return cache;
-  }
-
-  return await buscaAssincrona();
+  const params = new URLSearchParams(parametros).toString();
+  const endpoint = params ? `${caminho}?${params}` : caminho;
+  return fetchApi(endpoint, { method: 'GET' });
 };
 
 const popularGenerosNosFilmes = (filmes, generos) => {
-  filmes.forEach((filme) => {
-    filme.genre_ids = filme.genre_ids.map(
+  return filmes.map((filme) => ({
+    ...filme,
+    genre_ids: filme.genre_ids.map(
       (id) => generos.find((g) => g.id === id) || id
-    );
-  });
-};
-
-const popularFavoritosNosFilmes = (filmes) => {
-  const favoritos = JSON.parse(localStorage.getItem('favoritos') || '[]');
-
-  filmes.forEach((filme) => {
-    filme.is_favorite = !!favoritos.find((f) => f.id === filme.id);
-  });
+    ),
+  }));
 };
 
 const popularFilmesNosGeneros = async (listaGeneros) => {
@@ -94,19 +53,49 @@ const popularFilmesNosGeneros = async (listaGeneros) => {
         page: '1',
       });
 
-      popularGenerosNosFilmes(data.results, listaGeneros);
-      popularFavoritosNosFilmes(data.results);
+      data.results = popularGenerosNosFilmes(data.results, listaGeneros);
 
       return { ...genero, movies: data };
     })
   );
 };
 
-const obterFilmesCatalogoComCache = () =>
-  processarCache('filmes_catalogo', HORA_EM_MILISSEGUNDOS, buscarESalvarFilmes);
+let generosEmMemoria = null;
+const obterApenasGeneros = async () => {
+  if (generosEmMemoria) return generosEmMemoria;
+  const data = await requisicaoTMDB('genre/movie/list');
+  generosEmMemoria = data.genres;
+  return generosEmMemoria;
+};
 
-export const obterGenerosComCache = () =>
-  processarCache('generos', DIA_EM_MILISSEGUNDOS, buscarESalvarGeneros);
+export const buscarGeneros = async () => {
+  try {
+    const data = await requisicaoTMDB('genre/movie/list');
+    data.genres = await popularFilmesNosGeneros(data.genres);
+    return data;
+  } catch (error) {
+    console.error('Erro ao buscar gêneros', error);
+    throw error;
+  }
+};
+
+const buscarFilmesApi = async () => {
+  try {
+    const data = await requisicaoTMDB('discover/movie', {
+      sort_by: 'popularity.desc',
+      page: '1',
+    });
+
+    const generos = await obterApenasGeneros();
+
+    data.results = popularGenerosNosFilmes(data.results, generos);
+
+    return data;
+  } catch (error) {
+    console.error('Erro ao buscar filmes API', error);
+    throw error;
+  }
+};
 
 export const buscarFilmes = async ({
   pagina = 1,
@@ -115,65 +104,113 @@ export const buscarFilmes = async ({
   dataInicio = '',
   dataFim = '',
 } = {}) => {
-  const semFiltros =
-    !busca && !generoId && !dataInicio && !dataFim && pagina === 1;
+  try {
+    const semFiltros =
+      !busca && !generoId && !dataInicio && !dataFim && pagina === 1;
 
-  if (semFiltros) {
-    return await obterFilmesCatalogoComCache();
+    if (semFiltros) {
+      return await buscarFilmesApi();
+    }
+
+    const parametros = { page: pagina.toString() };
+    const endpoint = busca ? 'search/movie' : 'discover/movie';
+
+    if (busca) {
+      parametros.query = busca;
+    } else {
+      if (generoId) parametros.with_genres = generoId;
+      if (dataInicio) parametros['primary_release_date_gte'] = dataInicio;
+      if (dataFim) parametros['primary_release_date_lte'] = dataFim;
+    }
+
+    const filmes = await requisicaoTMDB(endpoint, parametros);
+    const generos = await obterApenasGeneros();
+
+    filmes.results = popularGenerosNosFilmes(filmes.results, generos);
+
+    return filmes;
+  } catch (error) {
+    console.error('Erro na busca de filmes', error);
+    throw error;
   }
+};
 
-  const parametros = {
-    page: pagina.toString(),
+export const buscarFilme = async (id) => {
+  try {
+    const filme = await requisicaoTMDB(`movies/${id}`);
+
+    const listaGeneros = await obterApenasGeneros();
+
+    filme.genres = (filme.genre_ids || []).map(
+      (id) =>
+        listaGeneros.find((g) => g.id === id) || { id, name: 'Desconhecido' }
+    );
+
+    return filme;
+  } catch (error) {
+    console.error(`Erro ao buscar e popular o filme ${id}:`, error);
+    throw error;
+  }
+};
+
+export const salvarFilmeAction = async ({ request, params }) => {
+  console.log('me chamaram');
+  const formData = await request.formData();
+  const method = request.method;
+
+  const genre_ids = formData.getAll('genre_ids').map(Number);
+
+  const getNumberOrUndefined = (val) => (val ? Number(val) : undefined);
+
+  const payload = {
+    title: formData.get('title'),
+    original_title: formData.get('original_title') || undefined,
+    overview: formData.get('overview') || undefined,
+    original_language: formData.get('original_language') || undefined,
+    release_date: formData.get('release_date') || undefined,
+    popularity: getNumberOrUndefined(formData.get('popularity')),
+    vote_average: getNumberOrUndefined(formData.get('vote_average')),
+    vote_count: getNumberOrUndefined(formData.get('vote_count')),
+    poster_path: formData.get('poster_path') || undefined,
+    backdrop_path: formData.get('backdrop_path') || undefined,
+    genre_ids: genre_ids.length > 0 ? genre_ids : undefined,
   };
 
-  const endpoint = busca ? 'search/movie' : 'discover/movie';
+  try {
+    if (method === 'POST') {
+      const response = await fetchApi('movies', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
 
-  if (busca) {
-    parametros.query = busca;
-    if (dataInicio)
-      parametros.primary_release_year = dataInicio.substring(0, 4);
-  } else {
-    if (generoId) parametros.with_genres = generoId;
-    if (dataInicio) parametros['primary_release_date.gte'] = dataInicio;
-    if (dataFim) parametros['primary_release_date.lte'] = dataFim;
+      const novoId = response?._id || response?.id;
+
+      return redirect(novoId ? `/detalhes/${novoId}` : '/catalogo');
+    }
+
+    if (method === 'PUT') {
+      await fetchApi(`movies/${params.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      });
+
+      return redirect(`/detalhes/${params.id}`);
+    }
+  } catch (error) {
+    console.error(`Erro ao processar o formulário (${method}):`, error);
+    return { error: 'Falha ao salvar o filme. Verifique os campos.' };
   }
-  const filmes = await requisicaoTMDB(endpoint, parametros);
-  popularFavoritosNosFilmes(filmes.results);
-  popularGenerosNosFilmes(
-    filmes.results,
-    (await obterGenerosComCache()).genres
-  );
-  return filmes;
 };
 
-export const toggleFavorite = (filme) => {
-  let favoritos = JSON.parse(localStorage.getItem('favoritos') || '[]');
+export const deletarFilmeAction = async ({ params }) => {
+  try {
+    await fetchApi(`movies/${params.id}`, {
+      method: 'DELETE',
+    });
 
-  const isFavorite = favoritos.find((f) => f.id === filme.id);
-
-  if (isFavorite) {
-    favoritos = favoritos.filter((f) => f.id !== filme.id);
-  } else {
-    favoritos.push(filme);
+    return redirect('/catalogo');
+  } catch (error) {
+    console.error('Erro ao deletar o filme:', error);
+    throw new Error('Não foi possível excluir o filme.');
   }
-
-  filme.is_favorite = !isFavorite;
-
-  const filmes = JSON.parse(
-    localStorage.getItem('filmes_catalogo') || '{"results":[]}'
-  );
-  const filme_catalogo = filmes.results.find((f) => f.id === filme.id);
-  filme_catalogo ? (filme_catalogo.is_favorite = !isFavorite) : null;
-
-  localStorage.setItem('filmes_catalogo', JSON.stringify(filmes));
-
-  localStorage.setItem('favoritos', JSON.stringify(favoritos));
-  return !isFavorite;
-};
-
-export const buscarFavoritos = () =>
-  JSON.parse(localStorage.getItem('favoritos') || '[]');
-
-export const buscarFilme = (id) => {
-  return requisicaoTMDB(`movie/${id}`);
 };
